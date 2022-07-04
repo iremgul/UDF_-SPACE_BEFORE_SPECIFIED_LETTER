@@ -5,6 +5,7 @@ CREATE FUNCTION dbo.[UDF_Space_Before_Specified_Letter]
     @String VARCHAR(MAX), -- Variable for string
 	@InputValue VARCHAR(MAX), -- Thing you want to change
 	@OutputValue VARCHAR(MAX)  -- Thing you want to get
+
 )
 RETURNS VARCHAR(MAX)
 BEGIN
@@ -19,6 +20,7 @@ N4 (n) AS (SELECT ROW_NUMBER() OVER(ORDER BY X.n)
 FROM N3 AS X, N3 AS Y)
  
 
+
 SELECT @RETURN_STRING = ISNULL(@RETURN_STRING,'')+
 (CASE WHEN CHARINDEX(@InputValue,@String) > 0 
 AND Nums.n >1
@@ -30,14 +32,35 @@ WHERE Nums.n<=LEN(@String)
 
 --print @String 
 RETURN @RETURN_STRING
+
 END
 GO
 
+  --For Example : You can write into a #tmp table and see the changes
+USE tempdb
+GO
+SELECT [ID], [Test_Column]
+,dbo.[UDF_Space_Before_Specified_Letter] ([Notes], 'This', ' This') As [New_Column] into #tmp
+from [Database].[dbo].[Table_Name]
+GO
 
---  For Example :
---USE tempdb
---GO
---SELECT [StudentStatus]
---,dbo.[UDF_Space_Before_Specified_Letters]([Notes], 'This', ' This') As [StudentStatus]
---from [Student].[dbo].[StudentInfo]
---GO
+select * from #tmp
+
+-- This script give you to update statement for the changes that you want from your #tmp table
+-- You can run it and you can copy the update scripts 
+
+SELECT ('UPDATE ' 
++ 'table_name (the table that you wanna change)' 
++ ' SET '
++ 'column_name (column should have been changed)'
++ ' = ' 
++ CONVERT(VARCHAR(MAX), test_column)
++ ' WHERE ' 
++ 'id' 
++ ' = ' 
++ CONVERT(VARCHAR(MAX),ID)) 
+FROM  #tmp
+
+
+
+
